@@ -128,19 +128,14 @@ button:active {
 
 .btn-buscar-packing {
     width: auto;
-    padding: 8px 14px;
-    font-size: 13px;
-}
-
-#txtCodigoPacking {
-    padding: 16px 14px;
-    font-size: 19px;
+    padding: 6px 10px;
+    font-size: 12px;
 }
 
 .mini-barcode {
     display: inline-flex;
     align-items: flex-end;
-    gap: 2px;
+    gap: 3px;
     height: 22px;
     margin-left: 8px;
     vertical-align: middle;
@@ -148,13 +143,13 @@ button:active {
 
 .mini-barcode i {
     display: block;
-    width: 3px;
+    width: 5px;
     height: 100%;
     background: #111;
 }
 
 .mini-barcode i:nth-child(3n) {
-    width: 5px;
+    width: 8px;
 }
 
 .mini-barcode i:nth-child(4n) {
