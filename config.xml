@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="org.apache.cordova.hellocordova" version="1.0.0" 
+xmlns="http://www.w3.org/ns/widgets"
+xmlns:cdv="http://cordova.apache.org/ns/1.0"
+xmlns:android="http://schemas.android.com/apk/res/android"
+>
+    <name>TeoApp</name>
+    <description>
+        TeoApp - Consulta de facturas y packing con impresión de etiquetas Zebra.
+    </description>
+    <icon src="resources/icon.png" />
+    <author email="dev@cordova.apache.org" href="https://cordova.apache.org">
+        Apache Cordova Team
+    </author>
+    <content src="principal.html" />
+    <preference name="scheme" value="http" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-navigation href="http://javaserver.teojama.com/*" />
+    <access origin="http://javaserver.teojama.com:8080" />
+    <allow-navigation href="http://javaserver.teojama.com:8080/*" />
+    
+
+<platform name="android">
+
+<resource-file
+    src="resources/android/xml/network_security_config.xml"
+    target="app/src/main/res/xml/network_security_config.xml" />
+
+
+    
+    <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
+        <application
+            android:usesCleartextTraffic="true"
+            android:networkSecurityConfig="@xml/network_security_config" />
+    </edit-config>
+
+
+    
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+        <uses-permission android:name="android.permission.INTERNET" />
+    </config-file>
+
+
+
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+        <uses-permission android:name="android.permission.BLUETOOTH" />
+    </config-file>
+
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+        <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    </config-file>
+
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+        <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    </config-file>
+
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+        <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    </config-file>
+
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+        <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    </config-file>
+
+</platform>
+
+
+
+
+</widget>

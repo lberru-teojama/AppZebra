@@ -1,0 +1,292 @@
+/**
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+*/
+
+/* ============ Tokens ============ */
+:root {
+    --bg:        #eceff3;
+    --surface:   #ffffff;
+    --ink:       #1b2027;
+    --muted:     #6b7480;
+    --line:      #e2e6ec;
+    --primary:   #ff5a1f;   /* naranja "térmico": acción de imprimir */
+    --primary-d: #e44a12;
+    --slate:     #1f2933;
+    --ok:        #15803d;
+    --ok-bg:     #e7f6ec;
+    --err:       #c0271f;
+    --err-bg:    #fbeae9;
+    --paper:     #fbfbf7;   /* etiqueta */
+    --radius:    16px;
+    --radius-sm: 11px;
+    --shadow:    0 1px 2px rgba(16,24,40,.06), 0 8px 24px rgba(16,24,40,.08);
+    --mono: ui-monospace, "SF Mono", "Roboto Mono", "Courier New", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg:      #11151b;
+        --surface: #1b212a;
+        --ink:     #e7ecf2;
+        --muted:   #93a0ad;
+        --line:    #2a323d;
+        --slate:   #cfd7e0;
+        --ok-bg:   #16321f;
+        --err-bg:  #3a1d1b;
+        --paper:   #f4f4ee;
+        --shadow:  0 1px 2px rgba(0,0,0,.4), 0 10px 28px rgba(0,0,0,.5);
+    }
+}
+
+/* ============ Base ============ */
+* { box-sizing: border-box; -webkit-tap-highlight-color: rgba(0,0,0,0); }
+
+html { overscroll-behavior: none; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--sans);
+    font-size: 16px;
+    color: var(--ink);
+    background: var(--bg);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-user-select: none;
+    user-select: none;
+    padding:
+        env(safe-area-inset-top, 0)
+        env(safe-area-inset-right, 0)
+        env(safe-area-inset-bottom, 0)
+        env(safe-area-inset-left, 0);
+}
+
+.app {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 0));
+}
+
+/* ============ Barra superior ============ */
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 2px 18px;
+}
+
+.brand { display: flex; align-items: center; gap: 10px; }
+
+.brand__mark {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: var(--slate);
+    position: relative;
+    flex: none;
+}
+.brand__mark::before {
+    content: "";
+    position: absolute; inset: 8px 7px;
+    background: repeating-linear-gradient(
+        to right,
+        var(--surface) 0 2px, transparent 2px 4px,
+        var(--surface) 4px 5px, transparent 5px 8px);
+}
+
+.brand__name { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
+.brand__name em { color: var(--primary); font-style: normal; }
+
+.badge {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 11px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.badge--wait  { background: var(--line); color: var(--muted); }
+.badge--ready { background: var(--ok-bg); color: var(--ok); }
+
+/* ============ Layout ============ */
+.stack { display: flex; flex-direction: column; gap: 14px; }
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px;
+}
+
+.card__eyebrow {
+    margin: 0 0 14px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+/* ============ SIGNATURE: etiqueta ============ */
+.preview-card { background: var(--slate); border-color: transparent; }
+.preview-card .card__eyebrow { color: rgba(255,255,255,.55); }
+
+.tag {
+    background: var(--paper);
+    color: #16161a;
+    border-radius: 10px;
+    padding: 18px 16px;
+    text-align: center;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
+    /* muesca lateral tipo etiqueta */
+    position: relative;
+}
+.tag::before, .tag::after {
+    content: "";
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--slate);
+}
+.tag::before { left: -7px; }
+.tag::after  { right: -7px; }
+
+.tag__title {
+    margin: 0 0 12px;
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: .01em;
+    word-break: break-word;
+    min-height: 1em;
+}
+
+.tag__bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 1px;
+    height: 64px;
+    margin: 0 auto 8px;
+}
+.tag__bars i { display: block; width: 2px; background: #16161a; }
+
+.tag__code {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: .18em;
+    color: #333;
+    word-break: break-all;
+}
+
+/* ============ Campos ============ */
+.field { display: block; margin-bottom: 14px; }
+.field--qty { max-width: 130px; }
+
+.field__label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--ink);
+}
+.field__label small { color: var(--muted); font-weight: 400; }
+
+.field__input {
+    width: 100%;
+    font: inherit;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 13px 14px;
+    -webkit-user-select: text; user-select: text;
+    transition: border-color .15s, box-shadow .15s;
+}
+.field__input::placeholder { color: var(--muted); }
+.field__input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255,90,31,.18);
+}
+
+/* ============ Botones ============ */
+.btn {
+    width: 100%;
+    font: inherit;
+    font-weight: 700;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 15px 16px;
+    cursor: pointer;
+    transition: transform .06s, background .15s, opacity .15s;
+    touch-action: manipulation;
+}
+.btn:active { transform: scale(.985); }
+.btn:focus-visible { outline: 3px solid rgba(255,90,31,.45); outline-offset: 2px; }
+.btn:disabled { opacity: .55; cursor: default; }
+
+.btn--primary { background: var(--primary); color: #fff; margin-top: 4px; }
+.btn--primary:active { background: var(--primary-d); }
+
+.btn--ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1.5px solid var(--line);
+}
+
+/* ============ Lista de dispositivos ============ */
+.device-list { list-style: none; margin: 14px 0 0; padding: 0; }
+.device-list__item {
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 13px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    cursor: pointer;
+    background: var(--bg);
+    transition: border-color .15s;
+}
+.device-list__item:active { border-color: var(--primary); }
+.device-list__item.is-selected { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(255,90,31,.15); }
+.device-list__name { font-weight: 600; font-size: 15px; }
+.device-list__mac  { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+.printer-current { margin: 0 0 14px; font-size: 14px; color: var(--muted); }
+.printer-current strong { color: var(--ink); }
+
+/* ============ Estado ============ */
+.status {
+    position: fixed;
+    left: 50%; transform: translateX(-50%);
+    bottom: calc(16px + env(safe-area-inset-bottom, 0));
+    max-width: 92%;
+    padding: 13px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 8px 28px rgba(0,0,0,.22);
+    z-index: 50;
+}
+.status--info { background: var(--slate); color: #fff; }
+.status--ok   { background: var(--ok-bg);  color: var(--ok);  border: 1px solid var(--ok); }
+.status--err  { background: var(--err-bg); color: var(--err); border: 1px solid var(--err); }
+
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+}

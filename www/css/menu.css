@@ -1,0 +1,181 @@
+   * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px; 
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #444;
+            font-size: 13px;
+
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #0078d4;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+.busqueda {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.datoFactura {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.datoFactura label {
+    display: inline;
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+
+.busqueda input {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.busqueda button {
+    width: auto;
+    margin-bottom: 0;
+    white-space: nowrap;
+    padding: 12px 20px;
+}        
+
+        button:hover {
+            background: #0063b1;
+        }
+
+        #resultado {
+            margin-top: 25px;
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            background: #0078d4;
+            color: white;
+            padding: 10px;
+        }
+
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ddd;
+}
+
+.tab {
+    padding: 6px 14px;
+    cursor: pointer;
+    background: #eee;
+    border: none;
+    font-size: 13px;
+    border-radius: 5px 5px 0 0;
+}
+
+.tab.active {
+    background: #0078d4;
+    color: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.tab.disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.impresora-packing {
+    margin-top: 16px;
+}
+
+.impresora-packing > button {
+    width: auto;
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+.lista-impresoras {
+    margin-top: 10px;
+}
+
+.impresora-item {
+    display: block;
+    width: 100%;
+    margin-bottom: 8px;
+    text-align: left;
+}
+
+.impresora-item small {
+    display: block;
+    margin-top: 3px;
+    color: #dcecff;
+}

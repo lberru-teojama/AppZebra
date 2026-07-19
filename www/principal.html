@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>🚛 Máximo App 🚛</title>
+    <link rel="stylesheet" href="css/principal.css">
+</head>
+
+
+<body>
+
+    <div class="banner">
+        <h1>🚛 Máximo App 🚛</h1>
+        <p>¡Tu asistente para recibir repuestos Hino. 😄</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="mostrarTab('facturas', this)">
+                    📄 Facturas
+                </button>
+                <button class="tab disabled" id="tabPacking" onclick="mostrarTab('packing', this)">
+                    📦 Packing
+                </button>
+                <button class="tab disabled" id="tabPendientes" onclick="mostrarTab('pendientes', this)">
+                    ⏳ Pendientes
+                </button>
+            </div>
+        </div>
+
+        <div id="facturas" class="tab-content active">
+            <h1>🔎 Consulta de Facturas</h1>
+
+            <label for="txtFactura">Número de Factura</label>
+            <div class="busqueda">
+                <input type="text"
+                       id="txtFactura"
+                       placeholder="Ingrese número de factura">
+
+                <button id="btnBuscar" onclick="buscarFactura()">
+                    Buscar 🔍
+                </button>
+            </div>
+            <br>
+            <div id="resultado">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Factura</th>
+                            <th>Cantidad</th>
+                            <th>Total</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detalleFactura">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="packing" class="tab-content">
+
+            <h1>📦 Packing</h1>
+            <div class="datoFactura">
+
+                <label>Factura:</label>
+                <label>
+                <label style="color:#189a4b; font-weight:bold; margin-left:8px;" id="lblFacturaPacking">
+                </label>
+            </div>
+
+            <label>Código de Barras
+                <span class="mini-barcode" aria-hidden="true">
+                    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                </span>
+            </label>
+            <div class="busqueda">
+                <input type="text"
+                       id="txtCodigoPacking"
+                       placeholder="Escanear código">
+
+                <button class="btn-buscar-packing" onclick="buscarPacking()">
+                    Buscar 🔍
+                </button>
+            </div>
+
+            <div id="resultadoPacking"></div>
+
+            <button class="btn-imprimir" onclick="enviaImprimir()">
+                🖨️ Imprimir
+            </button>
+
+        </div>
+
+        <div id="pendientes" class="tab-content">
+
+            <h1>⏳ Facturas Pendientes</h1>
+
+            <label style="color:#189a4b; font-weight:bold; margin-left:8px;" id="lblFacturaPendiente">
+
+            </label>
+            <button onclick="buscarPendientes()">
+                Buscar Pendientes 🕓
+            </button>
+
+            <div id="resultadoPendientes">
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer-bar">
+        <span class="footer-brand">🚚💨 Teojama · Hino · Mercedes-Benz · MG 🚚💨</span>
+        <button type="button" id="btnConfigImpresora" class="btn-config" onclick="toggleConfigImpresora()">⚙️ +</button>
+        <span class="footer-impresora">🖨️ <span id="nombreImpresoraPacking">Ninguna</span></span>
+    </div>
+
+    <div id="panelImpresora" class="impresora-packing" hidden>
+        <button type="button" onclick="buscarImpresorasPacking()">
+            📡 Buscar impresoras
+        </button>
+        <button type="button" onclick="configurarImpresoraPacking()">
+            ⚙️ Configurar impresora
+        </button>
+        <div id="listaImpresorasPacking" class="lista-impresoras"></div>
+    </div>
+
+    <script src="cordova.js"></script>
+    <script src="js/consultafactura.js"></script>
+
+</body>
+</html>

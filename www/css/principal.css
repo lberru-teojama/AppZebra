@@ -1,0 +1,401 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Comic Sans MS", "Comic Neue", cursive, sans-serif;
+}
+
+body {
+    background: #eef6ef;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.banner {
+    max-width: 700px;
+    margin: 0 auto 18px;
+    background: #189a4b;
+    border: 2px solid #0f6b31;
+    border-radius: 18px;
+    padding: 14px;
+    text-align: center;
+    transform: rotate(-1deg);
+    box-shadow: 0 14px 30px rgba(5, 5, 5, .95);
+}
+
+.banner h1 {
+    color: #fff;
+    font-family: "Segoe UI", "Trebuchet MS", Verdana, sans-serif;
+    font-weight: 900;
+    letter-spacing: 1px;
+    font-size: 30px;
+    text-shadow: 3px 3px 0 #000;
+    animation: wiggle 2.2s ease-in-out infinite;
+}
+
+.banner p {
+    color: #ffffff;
+    font-family: "Segoe UI", "Trebuchet MS", Verdana, sans-serif;
+    font-weight: bold;
+    font-size: 14px;
+    text-shadow: 1px 1px 0 #000;
+    margin-top: 6px;
+}
+
+@keyframes wiggle {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+}
+
+.container {
+    max-width: 700px;
+    margin: auto;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #d8e6dc;
+    border-radius: 16px;
+    padding: 14px 20px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .06);
+}
+
+h1 {
+    text-align: center;
+    color: #189a4b;
+    font-family: Arial, Helvetica, sans-serif;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    font-size: 24px;
+    text-shadow: 2px 2px 0 #ffcc00;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #111;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #bbb;
+    border-radius: 12px;
+    font-size: 16px;
+    margin-bottom: 15px;
+    background: #fff;
+}
+
+input:focus {
+    outline: 4px solid #ffcc00;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    background: #189a4b;
+    color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, .15);
+}
+
+button:hover {
+    background: #22c15e;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, .2);
+}
+
+button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .15);
+}
+
+.btn-imprimir {
+    display: block;
+    width: auto;
+    padding: 6px 16px;
+    font-size: 12px;
+    margin: 14px auto 0;
+}
+
+.btn-buscar-packing {
+    width: auto;
+    padding: 8px 14px;
+    font-size: 13px;
+}
+
+#txtCodigoPacking {
+    padding: 16px 14px;
+    font-size: 19px;
+}
+
+.mini-barcode {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 22px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.mini-barcode i {
+    display: block;
+    width: 3px;
+    height: 100%;
+    background: #111;
+}
+
+.mini-barcode i:nth-child(3n) {
+    width: 5px;
+}
+
+.mini-barcode i:nth-child(4n) {
+    height: 70%;
+}
+
+.busqueda {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.datoFactura {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.datoFactura label {
+    display: inline;
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+.busqueda input {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.busqueda button {
+    width: auto;
+    margin-bottom: 0;
+    white-space: nowrap;
+    padding: 12px 20px;
+}
+
+#resultado {
+    margin-top: 25px;
+    display: none;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    border: 1px solid #e2e8e4;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .08);
+}
+
+th {
+    background: #189a4b;
+    color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    font-size: 12px;
+    padding: 12px 10px;
+}
+
+td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #eef1ee;
+    color: #222;
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: center;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:nth-child(even) td {
+    background: #f7faf8;
+}
+
+tr:hover td {
+    background: #e6f5ec;
+}
+
+.btn-ir {
+    display: inline-block;
+    padding: 6px 18px;
+    background: #189a4b;
+    color: #fff;
+    border-radius: 999px;
+    text-decoration: none;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    font-size: 13px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .15);
+    transition: background .15s ease, transform .15s ease;
+}
+
+.btn-ir:hover {
+    background: #22c15e;
+    transform: translateY(-1px);
+}
+
+.tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 0;
+}
+
+.tab {
+    padding: 8px 16px;
+    cursor: pointer;
+    background: #ffcc00;
+    color: #111;
+    border: 1px solid #111;
+    border-bottom: none;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 10px 20px rgba(5, 5, 5, .95);
+}
+
+.tab:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .18);
+    transform: translateY(-1px);
+}
+
+.tab:active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .12);
+    transform: translateY(1px);
+}
+
+.tab.active {
+    background: #189a4b;
+    color: #fff;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.tab.disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.impresora-packing {
+    max-width: 700px;
+    margin: 12px auto 0;
+    background: #fff;
+    border: 1px solid #d8e6dc;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .1);
+}
+
+.impresora-packing > button {
+    width: auto;
+    padding: 8px 16px;
+    font-size: 13px;
+    margin-top: 8px;
+    margin-right: 8px;
+}
+
+.lista-impresoras {
+    margin-top: 10px;
+}
+
+.impresora-item {
+    display: block;
+    width: 100%;
+    margin-bottom: 8px;
+    text-align: left;
+    background: #111;
+}
+
+.impresora-item small {
+    display: block;
+    margin-top: 3px;
+    color: #ffcc00;
+}
+
+.icono-a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.85em;
+    height: 0.85em;
+    border-radius: 50%;
+    background: #ffcc00;
+    color: #111;
+    font-size: 0.65em;
+    font-weight: 900;
+    font-family: Arial, Helvetica, sans-serif;
+    vertical-align: middle;
+}
+
+.footer-bar {
+    max-width: 700px;
+    margin: 18px auto 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.footer-brand {
+    color: #0f6b31;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.btn-config {
+    display: inline-block;
+    width: auto;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: bold;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, .15);
+    transition: background .15s ease, transform .15s ease;
+}
+
+.btn-config.seleccionada {
+    background: #ffcc00;
+    color: #111;
+}
+
+.footer-impresora {
+    color: #0f6b31;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+#nombreImpresoraPacking {
+    font-family: "Century Gothic", CenturyGothic, AppleGothic, sans-serif;
+    font-weight: bold;
+    font-size: 11px;
+}
