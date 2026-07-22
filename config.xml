@@ -12,7 +12,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
     <author email="dev@cordova.apache.org" href="https://cordova.apache.org">
         Apache Cordova Team
     </author>
-    <content src="principal.html" />
+    <content src="login.html" />
     <preference name="scheme" value="http" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />

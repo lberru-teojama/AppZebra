@@ -103,6 +103,16 @@ input:focus {
     outline: 4px solid #ffcc00;
 }
 
+#txtUsuario {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+}
+
+#txtUsuario::placeholder {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+}
+
 button {
     width: 100%;
     padding: 12px;
@@ -128,6 +138,30 @@ button:active {
     box-shadow: 0 2px 4px rgba(0, 0, 0, .15);
 }
 
+button:disabled {
+    opacity: .7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, .5);
+    border-top-color: #fff;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+    animation: girar-spinner .7s linear infinite;
+}
+
+@keyframes girar-spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .btn-imprimir {
     display: block;
     width: auto;
@@ -140,6 +174,19 @@ button:active {
     width: auto;
     padding: 6px 10px;
     font-size: 12px;
+}
+
+.btn-cierra-packing {
+    display: block;
+    width: auto;
+    padding: 6px 14px;
+    font-size: 12px;
+    margin: 14px auto 0;
+    background: #c0392b;
+}
+
+.btn-cierra-packing:hover {
+    background: #e74c3c;
 }
 
 .mini-barcode {

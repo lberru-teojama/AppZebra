@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>🚛 Máximo App 🚛</title>
+    <link rel="stylesheet" href="css/principal.css">
+</head>
+
+<body>
+
+    <div class="banner">
+        <h1>🚛 Máximo App </h1>
+        <p>¡Tu asistente para recibir repuestos Hino. 😄</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h1>🔐 Ingresar</h1>
+
+            <label for="txtUsuario">Usuario</label>
+            <input type="text"
+                   id="txtUsuario"
+                   placeholder="Ingrese su usuario"
+                   autocomplete="username">
+
+            <label for="txtClave">Clave</label>
+            <input type="password"
+                   id="txtClave"
+                   placeholder="Ingrese su clave"
+                   autocomplete="current-password">
+
+            <button id="btnIngresar" onclick="ingresar()">
+                Ingresar 🔑
+            </button>
+        </div>
+    </div>
+
+    <script src="cordova.js"></script>
+    <script src="js/login.js"></script>
+
+</body>
+</html>

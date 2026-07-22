@@ -26,6 +26,26 @@ function conPermisoBluetooth(accion, alFallar) {
     }
 }
 
+// Muestra un spinner y desactiva el botón mientras dura la búsqueda (clic o Enter del escáner).
+function iniciarCarga(idBoton) {
+    const boton = document.getElementById(idBoton);
+    if (!boton) return;
+
+    boton.dataset.textoOriginal = boton.innerHTML;
+    boton.disabled = true;
+    boton.innerHTML = '<span class="spinner"></span>Procesando...';
+}
+
+function finalizarCarga(idBoton) {
+    const boton = document.getElementById(idBoton);
+    if (!boton) return;
+
+    boton.disabled = false;
+    if (boton.dataset.textoOriginal !== undefined) {
+        boton.innerHTML = boton.dataset.textoOriginal;
+    }
+}
+
 function mostrarTab(nombre, boton){
 
 if ((nombre === "packing" || nombre === "pendientes") && !tabsHabilitados) {
@@ -58,6 +78,11 @@ if ((nombre === "packing" || nombre === "pendientes") && !tabsHabilitados) {
     if (nombre === "pendientes") {
         const factura = document.getElementById("lblFacturaPacking").textContent.trim();
         document.getElementById("lblFacturaPendientes").textContent = factura;
+
+        const btnCierraPacking = document.getElementById("btnCierraPacking");
+        if (btnCierraPacking) {
+            btnCierraPacking.hidden = true;
+        }
     }
 
 }
@@ -122,6 +147,83 @@ try {
 
 }
 
+async function CierraPacking() {
+
+    const factura = document.getElementById("lblFacturaPacking").textContent.trim();
+
+    if (!factura) {
+        alert("Seleccione primero una factura.");
+        return;
+    }
+
+    if (!confirm("¿Está seguro de cerrar el Packing?")) {
+        return;
+    }
+
+    try {
+        const response = await fetch("http://javaserver.teojama.com:8080/FacturaApp/api/factura/cierrapacking", {
+            method: "POST",
+            headers: {
+                "Content-Type": "text/plain"
+            },
+            body: factura
+        });
+
+        const texto = await response.text();
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${texto}`);
+        }
+        alert("Packing cerrado correctamente para la factura: " + factura);
+        reiniciarAplicacion();
+
+    } catch (error) {
+        console.error("Error al cerrar packing:", error);
+        alert("No se pudo cerrar el packing: " + (error.message || error.toString()));
+    }
+}
+
+function reiniciarAplicacion() {
+
+    tabsHabilitados = false;
+
+    document.getElementById("tabPacking").classList.add("disabled");
+    document.getElementById("tabPendientes").classList.add("disabled");
+
+    mostrarTab("facturas", document.getElementById("tabFacturas"));
+
+    const txtFactura = document.getElementById("txtFactura");
+    if (txtFactura) {
+        txtFactura.value = "";
+    }
+
+    const tbody = document.getElementById("detalleFactura");
+    if (tbody) {
+        tbody.innerHTML = "";
+    }
+
+    const resultado = document.getElementById("resultado");
+    if (resultado) {
+        resultado.style.display = "none";
+    }
+
+    document.getElementById("lblFacturaPacking").textContent = "";
+    limpiarPacking();
+
+    document.getElementById("lblFacturaPendientes").textContent = "";
+    document.getElementById("lblTotalCantidadPendientes").textContent = "";
+    document.getElementById("lblTotalItemsPendientes").textContent = "";
+
+    const resultadoPendientes = document.getElementById("resultadoPendientes");
+    if (resultadoPendientes) {
+        resultadoPendientes.innerHTML = "";
+    }
+
+    const btnCierraPacking = document.getElementById("btnCierraPacking");
+    if (btnCierraPacking) {
+        btnCierraPacking.hidden = true;
+    }
+}
 
 async function enviaImprimir(){
     if (!ultimoPacking.length) {
@@ -376,7 +478,8 @@ function datosEtiquetaPacking(pedido, nroParte, ubicacion, cantidad, codigo, des
         sucursal: limpiar("Sucursal: " + destino),
         codigo: limpiar(codigo),
         descripcion: limpiar(descripcion),
-        factura: limpiar("Fac.: " + document.getElementById("lblFacturaPacking").textContent.trim())
+        factura: limpiar("Fac.: " + document.getElementById("lblFacturaPacking").textContent.trim()),
+        usuario: limpiar(localStorage.getItem("usuario.logueado") || "")
     };
 }
 
@@ -393,17 +496,17 @@ function construirEtiquetaZplPacking(pedido, nroParte, ubicacion, cantidad, codi
        "^PW" + ANCHO_ETIQUETA_DOTS +
        "^LL" + LARGO_ETIQUETA_DOTS +
        "^LH0,0" +
-       "^FO40,15^A0N,40,40^FD" + datos.pedido + "^FS" +
-       "^FO550,15^A0N,40,30^FD" + datos.sucursal + "^FS" +
-       "^FO40,75^A0N,35,30^FD" + datos.detalle + "^FS" +
-       "^FO550,75^A0N,40,40^FD" + datos.cantidad + "^FS" +
-       "^FO40,130^A0N,30,30^FD" + datos.descripcion + "^FS" +
-       "^FO550,130^A0N,30,30^FD" + datos.factura + "^FS" +
-       "^FO150,200^BY3" +
+       "^FO40,35^A0N,40,40^FD" + datos.pedido + "^FS" +
+       "^FO550,35^A0N,40,30^FD" + datos.sucursal + "^FS" +
+       "^FO40,95^A0N,35,30^FD" + datos.detalle + "^FS" +
+       "^FO550,95^A0N,40,40^FD" + datos.cantidad + "^FS" +
+       "^FO40,150^A0N,30,30^FD" + datos.descripcion + "^FS" +
+       "^FO550,150^A0N,30,30^FD" + datos.factura + "^FS" +
+       "^FO150,215^BY3" +
        "^BCN,100,N,N,N" +
        "^FD" + datos.codigo + "^FS" +
-       "^FO260,330^A0N,35,35^FD" + datos.parte + "^FS" +
-       
+       "^FO260,340^A0N,35,35^FD" + datos.parte + "^FS" +
+       "^FO570,360^A0N,30,25^FD" + datos.usuario + "^FS" +
        "^XZ";
 
     //return    "^XA" +
@@ -450,6 +553,7 @@ function activarBusquedaAlPresionarEnter(idInput, buscar) {
 }
 
 activarBusquedaAlPresionarEnter("txtCodigoPacking", buscarPacking);
+activarBusquedaAlPresionarEnter("txtFactura", buscarFactura);
 
 // Convierte a mayúsculas lo que se escribe a mano (el lector de código de barras ya manda
 // mayúsculas, esto es para cuando el usuario escribe el número de parte manualmente).
@@ -478,6 +582,8 @@ async function buscarPendientes(){
         return;
     }
 
+    iniciarCarga("btnBuscarPendientes");
+
     try {
 
 
@@ -503,9 +609,16 @@ async function buscarPendientes(){
         pintarFacturasPendientes(obtenerFilasFactura(datos));
         await buscarPendientesResumen();
 
+        const btnCierraPacking = document.getElementById("btnCierraPacking");
+        if (btnCierraPacking) {
+            btnCierraPacking.hidden = false;
+        }
+
     } catch (error) {
         console.error("Error al consultar pendientes:", error);
         alert("No se pudo consultar los pendientes: " + (error.message || error.toString()));
+    } finally {
+        finalizarCarga("btnBuscarPendientes");
     }
 }
 
@@ -566,6 +679,8 @@ async function buscarPacking(){
 
     const linea = factura + " " + codigo;
 
+    iniciarCarga("btnBuscarPacking");
+
     try {
         const response = await fetch("http://javaserver.teojama.com:8080/FacturaApp/api/factura/consultapacking", {
             method: "POST",
@@ -595,19 +710,28 @@ async function buscarPacking(){
         // tener que borrar nada primero.
         txtCodigoPacking.value = "";
         txtCodigoPacking.focus();
+        finalizarCarga("btnBuscarPacking");
     }
 }
 
 
 function pintarResumenPendientes(datos) {
     const lblTotal = document.getElementById("lblTotalCantidadPendientes");
+    const lblItems = document.getElementById("lblTotalItemsPendientes");
+
     if (!lblTotal) return;
 
     const filas = Array.isArray(datos) ? datos : [datos];
     const item = filas[0] || {};
     const totalCantidad = valorCampo(item, ["totalcantidad", "totalCantidad", "TotalCantidad", "TOTALCANTIDAD"]);
+    const totalItems = valorCampo(item, ["totalitems", "totalItems", "TotalItems", "TOTALITEMS"]);
 
     lblTotal.textContent = totalCantidad !== "" ? totalCantidad : "0";
+    lblItems.textContent = totalItems !== "" ? totalItems : "0";
+
+
+
+
 }
 
 
@@ -715,11 +839,6 @@ function pintarPackingEscaneo(datos) {
     }
 }
 
-
-
-
-
-
 async function buscarFactura() {
     const factura = document.getElementById("txtFactura").value.trim();
 
@@ -727,6 +846,8 @@ async function buscarFactura() {
         alert("Ingrese una factura");
         return;
     }
+
+    iniciarCarga("btnBuscar");
 
     try {
 
@@ -753,7 +874,9 @@ async function buscarFactura() {
     } catch (error) {
         alert("Error: ");
         alert("No se pudo consultar o mapear la factura: " + (error.message || error.toString()));
-        pintarPacking();  
+        pintarPacking();
+    } finally {
+        finalizarCarga("btnBuscar");
     }
 }
 

@@ -20,7 +20,7 @@
     <div class="container">
         <div class="card">
             <div class="tabs">
-                <button class="tab active" onclick="mostrarTab('facturas', this)">
+                <button class="tab active" id="tabFacturas" onclick="mostrarTab('facturas', this)">
                     📄 Facturas
                 </button>
                 <button class="tab disabled" id="tabPacking" onclick="mostrarTab('packing', this)">
@@ -83,7 +83,7 @@
                        id="txtCodigoPacking"
                        placeholder="Escanear código">
 
-                <button class="btn-buscar-packing" onclick="buscarPacking()">
+                <button class="btn-buscar-packing" id="btnBuscarPacking" onclick="buscarPacking()">
                     Buscar 🔍
                 </button>
             </div>
@@ -125,15 +125,15 @@
                 </label>
             </div>
 
-            <button class="btn-buscar-packing" onclick="buscarPendientes()">
+            <button class="btn-buscar-packing" id="btnBuscarPendientes" onclick="buscarPendientes()">
                 Buscar Pendientes 🕓
             </button>
 
             <div id="resultadoPendientes">
 
             </div>
-             <button class="btn-cierra-packing" onclick="CierraPacking()">
-                Cerrar Packing 
+             <button class="btn-cierra-packing" id="btnCierraPacking" onclick="CierraPacking()" hidden>
+                Cerrar Packing
             </button>
 
 
