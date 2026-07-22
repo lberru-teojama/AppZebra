@@ -2,6 +2,29 @@
 
 
 let ultimoPacking = [];
+let seleccionPacking = new Set();
+// Guarda el código escaneado por separado del input: así, aunque el usuario toque la tabla
+// (pierde el foco/selección de txtCodigoPacking) o escanee uno nuevo, enviaImprimir() sigue
+// usando el código con el que realmente se hizo la búsqueda, no lo que quede en el campo.
+let codigoPackingEscaneado = "";
+
+// Android 12+ (API 31+) exige el permiso BLUETOOTH_CONNECT/BLUETOOTH_SCAN en tiempo de ejecución;
+// declararlo en el manifest no basta. cordova-plugin-bluetooth-serial no lo solicita, así que lo
+// pedimos aquí con cordova.plugins.diagnostic (ya instalado) antes de usar bluetoothSerial.
+function conPermisoBluetooth(accion, alFallar) {
+    const diagnosticoBluetooth = typeof cordova !== "undefined" && cordova.plugins && cordova.plugins.diagnostic && cordova.plugins.diagnostic.bluetooth;
+    if (diagnosticoBluetooth && diagnosticoBluetooth.requestBluetoothAuthorization) {
+        diagnosticoBluetooth.requestBluetoothAuthorization(accion, function (error) {
+            if (alFallar) {
+                alFallar(error);
+            } else {
+                alert("Se requiere permiso de Bluetooth para continuar: " + error);
+            }
+        }, ["BLUETOOTH_CONNECT", "BLUETOOTH_SCAN"]);
+    } else {
+        accion();
+    }
+}
 
 function mostrarTab(nombre, boton){
 
@@ -20,13 +43,45 @@ if ((nombre === "packing" || nombre === "pendientes") && !tabsHabilitados) {
     document.getElementById(nombre).classList.add("active");
     boton.classList.add("active");
 
+    if (nombre === "facturas") {
+        const txtFactura = document.getElementById("txtFactura");
+        if (txtFactura) {
+            txtFactura.focus();
+            txtFactura.select();
+        }
+    }
 
+    if (nombre === "packing") {
+        limpiarPacking();
+    }
 
+    if (nombre === "pendientes") {
+        const factura = document.getElementById("lblFacturaPacking").textContent.trim();
+        document.getElementById("lblFacturaPendientes").textContent = factura;
+    }
+
+}
+
+function limpiarPacking() {
+    ultimoPacking = [];
+    seleccionPacking = new Set();
+    codigoPackingEscaneado = "";
+
+    const resultadoPacking = document.getElementById("resultadoPacking");
+    if (resultadoPacking) {
+        resultadoPacking.innerHTML = "";
+    }
+
+    const txtCodigoPacking = document.getElementById("txtCodigoPacking");
+    if (txtCodigoPacking) {
+        txtCodigoPacking.value = "";
+        txtCodigoPacking.focus();
+    }
 }
 
 function irPacking(factura) {
 
-    alert("Entrando a Packing:");
+    //alert("Entrando a Packing:");
 
     document.getElementById("tabPacking").classList.remove("disabled");
     document.getElementById("tabPendientes").classList.remove("disabled");
@@ -34,7 +89,7 @@ function irPacking(factura) {
     document.getElementById("lblFacturaPacking").textContent = factura;
     //document.getElementById("txtFacturaPacking").value = factura;
 
-    alert("Entrando a Packing:" + factura);
+    //alert("Entrando a Packing:" + factura);
 
     // Habilita las demás pestañas
     tabsHabilitados = true;
@@ -47,9 +102,9 @@ function irPacking(factura) {
 
 }
 
-async function actualizaPacking(factura, pedido, nroParte) {
+async function actualizaPacking(factura, pedido, nroParte, secuencia) {
 
-const linea = factura + "|" + pedido + "|" + nroParte;    
+const linea = factura + "|" + pedido + "|" + nroParte + "|" + secuencia;    
 
 try {
     await fetch("http://javaserver.teojama.com:8080/FacturaApp/api/factura/actualizapacking", {
@@ -60,7 +115,7 @@ try {
         body: linea
     });
 
-    console.log("Solicitud enviada.");
+    //console.log("Solicitud enviada.");
 } catch (error) {
     console.error("Error al enviar la solicitud:", error);
 }
@@ -86,50 +141,92 @@ async function enviaImprimir(){
     }
 
     const factura = document.getElementById("lblFacturaPacking").textContent.trim();
+    const codigoEscaneado = codigoPackingEscaneado;
 
+    // Con un solo registro se imprime directo; con 2 o más, solo se imprimen los seleccionados en la tabla.
+    const filasAImprimir = ultimoPacking.length > 1
+        ? ultimoPacking.filter((_, indice) => seleccionPacking.has(indice))
+        : ultimoPacking;
 
-    const item = ultimoPacking[0];
-    const pedido = valorCampo(item, ["pedido", "Pedido", "PEDIDO"]);
-    const nroParte = valorCampo(item, ["nroparte", "nroParte", "NroParte", "NROPARTE"]);
-    const ubicacion = valorCampo(item, ["ubicacion", "Ubicacion", "UBICACION"]);
-    const cantidad = valorCampo(item, ["cantidad", "Cantidad", "CANTIDAD"]);
-    const destino    = valorCampo(item, ["destino", "Destino", "DESTINO"]);
-    
-    const codigo = nroParte || document.getElementById("txtCodigoPacking").value.trim();
+    if (ultimoPacking.length > 1 && !filasAImprimir.length) {
+        alert("Seleccione al menos un registro de la tabla para imprimir.");
+        return;
+    }
 
+    const etiquetas = [];
+    for (const item of filasAImprimir) {
+        const pedido = valorCampo(item, ["pedido", "Pedido", "PEDIDO"]);
+        const nroParte = valorCampo(item, ["nroparte", "nroParte", "NroParte", "NROPARTE"]);
+        const ubicacion = valorCampo(item, ["ubicacion", "Ubicacion", "UBICACION"]);
+        const cantidad = valorCampo(item, ["cantidad", "Cantidad", "CANTIDAD"]);
+        const destino = valorCampo(item, ["destino", "Destino", "DESTINO"]);
+        const descripcion = valorCampo(item, ["descripcion", "Descripcion", "DESCRIPCION"]);
+        const secuencia = valorCampo(item, ["secuencia", "Secuencia", "SECUENCIA"]);
+        const estado = valorCampo(item, ["estado", "Estado", "ESTADO"]);
 
-    if (!codigo) {
+        //alert("La secuencia es: " + secuencia);
+
+        const codigo = nroParte || codigoEscaneado;
+
+        if (!codigo) {
+            console.warn("Se omite un registro del packing sin número de parte:", item);
+            continue;
+        }
+
+        await actualizaPacking(factura, pedido, nroParte,secuencia);
+
+        // Cambie solo esta línea según el lenguaje configurado en su impresora:
+        //etiquetas.push(construirEtiquetaCpclPacking(pedido, nroParte, ubicacion, cantidad, codigo, destino));
+        etiquetas.push(construirEtiquetaZplPacking(pedido, nroParte, ubicacion, cantidad, codigo, destino,descripcion));
+    }
+
+    if (!etiquetas.length) {
         alert("El packing no contiene un número de parte para imprimir.");
         return;
     }
 
-    await actualizaPacking(factura,pedido, nroParte);
-
-
-    // Cambie solo esta línea según el lenguaje configurado en su impresora:
-    //const etiqueta = construirEtiquetaCpclPacking(pedido, nroParte, ubicacion, cantidad, codigo,destino);
-    const etiqueta = construirEtiquetaZplPacking(pedido, nroParte, ubicacion, cantidad, codigo,destino);
     const boton = document.querySelector("button[onclick='enviaImprimir()']");
     if (boton) { boton.disabled = true; }
 
-    bluetoothSerial.connect(mac, function () {
-        bluetoothSerial.write(etiqueta, function () {
-            setTimeout(function () {
-                bluetoothSerial.disconnect(liberar, liberar);
-                alert("Etiqueta enviada a la impresora.");
-            }, 1500);
+    conPermisoBluetooth(function () {
+        // Reconectar (connect/disconnect) en cada impresión hace que la ZQ521 vuelva a verificar
+        // la posición del sensor de gap y bote etiquetas en blanco de más. Por eso se reutiliza la
+        // conexión si ya está abierta, y solo se conecta de cero cuando realmente no lo está.
+        bluetoothSerial.isConnected(function () {
+            imprimirEtiquetasPendientes(etiquetas.slice());
+        }, function () {
+            bluetoothSerial.connect(mac, function () {
+                imprimirEtiquetasPendientes(etiquetas.slice());
+            }, function (error) {
+                liberar();
+                alert("No se pudo conectar con la impresora: " + error);
+            });
+        });
+    }, function (error) {
+        liberar();
+        alert("No se pudo conectar con la impresora: permiso de Bluetooth denegado (" + error + ")");
+    });
+
+    function imprimirEtiquetasPendientes(cola) {
+        if (!cola.length) {
+            liberar();
+            return;
+        }
+
+        bluetoothSerial.write(cola.shift(), function () {
+            imprimirEtiquetasPendientes(cola);
         }, function (error) {
             liberar();
             desconectarImpresora();
             alert("No se pudo enviar la etiqueta: " + error);
         });
-    }, function (error) {
-        liberar();
-        alert("No se pudo conectar con la impresora: " + error);
-    });
+    }
 
     function liberar() {
         if (boton) { boton.disabled = false; }
+
+        const txtCodigoPacking = document.getElementById("txtCodigoPacking");
+        if (txtCodigoPacking) { txtCodigoPacking.focus(); }
     }
 }
 
@@ -146,26 +243,50 @@ function configurarImpresoraPacking() {
         return;
     }
 
+    // "media.sense_mode" obliga a la impresora a recalibrar el sensor de gap (bota etiquetas en
+    // blanco) cada vez que se envía. Solo hace falta una vez por rollo de etiquetas, así que si ya
+    // se configuró antes se confirma para no desperdiciar etiquetas sin querer.
+    if (localStorage.getItem("printer.configurada") === "1") {
+        const continuar = confirm("Esta impresora ya fue configurada antes. Volver a hacerlo recalibra el sensor y bota etiquetas en blanco. ¿Continuar?");
+        if (!continuar) return;
+    }
+
+    if (!confirm('Antes de continuar: verifique que hay al menos 3 etiquetas completas cargadas pasando el cabezal. Si no hay suficiente papel, la calibración queda a medias y el largo de etiqueta guardado sigue mal. ¿Ya hay suficiente papel cargado?')) {
+        return;
+    }
+
+    // "~JC" es el comando nativo de ZPL para calibrar (más confiable que el "do" de SGD): fuerza
+    // a la impresora a re-aprender el largo real de la etiqueta contra el sensor de gap.
     const comandos = '! U1 setvar "media.type" "label"\r\n' +
-        '! U1 setvar "media.sense_mode" "gap"\r\n';
+        '! U1 setvar "media.sense_mode" "gap"\r\n' +
+        '! U1 setvar "media.printmode" "tear-off"\r\n' +
+        '! U1 setvar "device.languages" "zpl"\r\n' +
+        '! U1 setvar "ezpl.label_length" "400"\r\n' +
+        '~JC\r\n';
 
     const boton = document.querySelector("button[onclick='configurarImpresoraPacking()']");
     if (boton) { boton.disabled = true; }
 
-    bluetoothSerial.connect(mac, function () {
-        bluetoothSerial.write(comandos, function () {
-            setTimeout(function () {
-                bluetoothSerial.disconnect(liberar, liberar);
-                alert("Impresora configurada para etiquetas con gap. Debería botar unas etiquetas en blanco mientras recalibra.");
-            }, 1500);
+    conPermisoBluetooth(function () {
+        bluetoothSerial.connect(mac, function () {
+            bluetoothSerial.write(comandos, function () {
+                setTimeout(function () {
+                    bluetoothSerial.disconnect(liberar, liberar);
+                    localStorage.setItem("printer.configurada", "1");
+                    alert("Impresora configurada en modo ZPL para etiquetas con gap. Va a botar varias etiquetas en blanco mientras calibra el sensor: déjela terminar sin apagarla ni quitarle el rollo. Después imprima el reporte de configuración (~WC) y confirme que \"LABEL LENGTH\" quedó cerca de 400, no en 2030.");
+                }, 6000);
+            }, function (error) {
+                liberar();
+                desconectarImpresora();
+                alert("No se pudo enviar la configuración: " + error);
+            });
         }, function (error) {
             liberar();
-            desconectarImpresora();
-            alert("No se pudo enviar la configuración: " + error);
+            alert("No se pudo conectar con la impresora: " + error);
         });
     }, function (error) {
         liberar();
-        alert("No se pudo conectar con la impresora: " + error);
+        alert("No se pudo conectar con la impresora: permiso de Bluetooth denegado (" + error + ")");
     });
 
     function liberar() {
@@ -182,10 +303,14 @@ function buscarImpresorasPacking() {
     const lista = document.getElementById("listaImpresorasPacking");
     lista.textContent = "Buscando impresoras emparejadas...";
 
-    bluetoothSerial.list(function (dispositivos) {
-        mostrarImpresorasPacking(dispositivos || []);
+    conPermisoBluetooth(function () {
+        bluetoothSerial.list(function (dispositivos) {
+            mostrarImpresorasPacking(dispositivos || []);
+        }, function (error) {
+            lista.textContent = "No se pudieron listar las impresoras: " + error;
+        });
     }, function (error) {
-        lista.textContent = "No se pudieron listar las impresoras: " + error;
+        lista.textContent = "No se pudieron listar las impresoras: permiso de Bluetooth denegado (" + error + ")";
     });
 }
 
@@ -223,6 +348,7 @@ function mostrarImpresorasPacking(dispositivos) {
 }
 
 function actualizarImpresoraPacking() {
+    
     const mac = localStorage.getItem("printer.mac") || "";
     const nombre = localStorage.getItem("printer.name") || mac || "Ninguna";
     document.getElementById("nombreImpresoraPacking").textContent = nombre;
@@ -239,7 +365,7 @@ function toggleConfigImpresora() {
     panel.hidden = !panel.hidden;
 }
 
-function datosEtiquetaPacking(pedido, nroParte, ubicacion, cantidad, codigo, destino) {
+function datosEtiquetaPacking(pedido, nroParte, ubicacion, cantidad, codigo, destino, descripcion) {
     const limpiar = valor => String(valor || "").replace(/[\^~\r\n]/g, " ").trim();
 
     return {
@@ -248,7 +374,9 @@ function datosEtiquetaPacking(pedido, nroParte, ubicacion, cantidad, codigo, des
         detalle: limpiar("Ubic: " + ubicacion),
         cantidad: limpiar("Cant: " + cantidad),
         sucursal: limpiar("Sucursal: " + destino),
-        codigo: limpiar(codigo)
+        codigo: limpiar(codigo),
+        descripcion: limpiar(descripcion),
+        factura: limpiar("Fac.: " + document.getElementById("lblFacturaPacking").textContent.trim())
     };
 }
 
@@ -257,22 +385,25 @@ function datosEtiquetaPacking(pedido, nroParte, ubicacion, cantidad, codigo, des
 const LARGO_ETIQUETA_DOTS = 400;
 const ANCHO_ETIQUETA_DOTS = 800;
 
-function construirEtiquetaZplPacking(pedido, nroParte, ubicacion, cantidad, codigo, destino) {
+function construirEtiquetaZplPacking(pedido, nroParte, ubicacion, cantidad, codigo, destino,descripcion) {
 
-    const datos = datosEtiquetaPacking(pedido, nroParte, ubicacion, cantidad, codigo, destino);
+    const datos = datosEtiquetaPacking(pedido, nroParte, ubicacion, cantidad, codigo, destino,descripcion);
 
     return "^XA" +
        "^PW" + ANCHO_ETIQUETA_DOTS +
        "^LL" + LARGO_ETIQUETA_DOTS +
        "^LH0,0" +
-       "^FO40,40^A0N,40,40^FD" + datos.pedido + "^FS" +
-       "^FO500,40^A0N,40,30^FD" + datos.sucursal + "^FS" +
-       "^FO40,100^A0N,35,30^FD" + datos.detalle + "^FS" +
-       "^FO500,100^A0N,40,40^FD" + datos.cantidad + "^FS" +
-       "^FO150,160^BY3" +
-       "^BCN,140,N,N,N" +
+       "^FO40,15^A0N,40,40^FD" + datos.pedido + "^FS" +
+       "^FO550,15^A0N,40,30^FD" + datos.sucursal + "^FS" +
+       "^FO40,75^A0N,35,30^FD" + datos.detalle + "^FS" +
+       "^FO550,75^A0N,40,40^FD" + datos.cantidad + "^FS" +
+       "^FO40,130^A0N,30,30^FD" + datos.descripcion + "^FS" +
+       "^FO550,130^A0N,30,30^FD" + datos.factura + "^FS" +
+       "^FO150,200^BY3" +
+       "^BCN,100,N,N,N" +
        "^FD" + datos.codigo + "^FS" +
        "^FO260,330^A0N,35,35^FD" + datos.parte + "^FS" +
+       
        "^XZ";
 
     //return    "^XA" +
@@ -304,10 +435,43 @@ function desconectarImpresora() {
 
 actualizarImpresoraPacking();
 
+// El lector de código de barras escribe el código y luego envía un Enter automáticamente;
+// se aprovecha ese Enter para disparar la búsqueda sin necesidad de tocar el botón.
+function activarBusquedaAlPresionarEnter(idInput, buscar) {
+    const input = document.getElementById(idInput);
+    if (!input) return;
+
+    input.addEventListener("keydown", function (evento) {
+        if (evento.key === "Enter") {
+            evento.preventDefault();
+            buscar();
+        }
+    });
+}
+
+activarBusquedaAlPresionarEnter("txtCodigoPacking", buscarPacking);
+
+// Convierte a mayúsculas lo que se escribe a mano (el lector de código de barras ya manda
+// mayúsculas, esto es para cuando el usuario escribe el número de parte manualmente).
+function activarMayusculas(idInput) {
+    const input = document.getElementById(idInput);
+    if (!input) return;
+
+    input.addEventListener("input", function () {
+        const inicio = input.selectionStart;
+        const fin = input.selectionEnd;
+        input.value = input.value.toUpperCase();
+        input.setSelectionRange(inicio, fin);
+    });
+}
+
+activarMayusculas("txtCodigoPacking");
+
 
 async function buscarPendientes(){
 
-    const factura = document.getElementById("lblFacturaPendiente").textContent.trim();
+    
+    const factura = document.getElementById("lblFacturaPendientes").textContent.trim();
 
     if (!factura) {
         alert("Seleccione primero una factura.");
@@ -315,6 +479,12 @@ async function buscarPendientes(){
     }
 
     try {
+
+
+
+
+
+
         const response = await fetch("http://javaserver.teojama.com:8080/FacturaApp/api/factura/consultapendientes", {
             method: "POST",
             headers: {
@@ -329,17 +499,58 @@ async function buscarPendientes(){
             throw new Error(`HTTP ${response.status}: ${texto}`);
         }
 
-        const datos = JSON.parse(texto);
+        const datos = parsearJsonSeguro(texto);
         pintarFacturasPendientes(obtenerFilasFactura(datos));
+        await buscarPendientesResumen();
+
     } catch (error) {
         console.error("Error al consultar pendientes:", error);
         alert("No se pudo consultar los pendientes: " + (error.message || error.toString()));
     }
 }
 
+async function buscarPendientesResumen(){
+
+    const factura = document.getElementById("lblFacturaPendientes").textContent.trim();
+
+    if (!factura) {
+        alert("Seleccione primero una factura.");
+        return;
+    }
+
+    try {
+
+        const response = await fetch("http://javaserver.teojama.com:8080/FacturaApp/api/factura/resumenpendientes", {
+            method: "POST",
+            headers: {
+                "Content-Type": "text/plain"
+            },
+            body: factura
+        });
+
+        const texto = await response.text();
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${texto}`);
+        }
+
+        const datos = parsearJsonSeguro(texto);
+        pintarResumenPendientes(obtenerFilasFactura(datos));
+        
+    } catch (error) {
+        console.error("Error al consultar pendientes:", error);
+        alert("No se pudo consultar los pendientes: " + (error.message || error.toString()));
+    }
+}
+
+
+
+
+
 async function buscarPacking(){
     const factura = document.getElementById("lblFacturaPacking").textContent.trim();
-    const codigo = document.getElementById("txtCodigoPacking").value.trim();
+    const txtCodigoPacking = document.getElementById("txtCodigoPacking");
+    const codigo = txtCodigoPacking.value.trim();
 
     if (!factura) {
         alert("Seleccione primero una factura.");
@@ -350,6 +561,8 @@ async function buscarPacking(){
         alert("Ingrese o escanee un código de barras.");
         return;
     }
+
+    codigoPackingEscaneado = codigo;
 
     const linea = factura + " " + codigo;
 
@@ -368,15 +581,36 @@ async function buscarPacking(){
             throw new Error(`HTTP ${response.status}: ${texto}`);
         }
 
-        const datos = JSON.parse(texto);
+        const datos = parsearJsonSeguro(texto);
         console.log("Respuesta packing:", datos);
         ultimoPacking = obtenerFilasFactura(datos);
         pintarPackingEscaneo(ultimoPacking);
     } catch (error) {
         console.error("Error al consultar packing:", error);
         alert("No se pudo consultar el packing: " + (error.message || error.toString()));
+    } finally {
+        // Se limpia de una vez: el código ya quedó guardado en "codigoPackingEscaneado" para
+        // imprimir, así que no hace falta dejarlo (ni seleccionado) en el campo. Así, si el
+        // usuario toca la tabla para elegir una fila, el siguiente escaneo entra directo sin
+        // tener que borrar nada primero.
+        txtCodigoPacking.value = "";
+        txtCodigoPacking.focus();
     }
 }
+
+
+function pintarResumenPendientes(datos) {
+    const lblTotal = document.getElementById("lblTotalCantidadPendientes");
+    if (!lblTotal) return;
+
+    const filas = Array.isArray(datos) ? datos : [datos];
+    const item = filas[0] || {};
+    const totalCantidad = valorCampo(item, ["totalcantidad", "totalCantidad", "TotalCantidad", "TOTALCANTIDAD"]);
+
+    lblTotal.textContent = totalCantidad !== "" ? totalCantidad : "0";
+}
+
+
 
 function pintarFacturasPendientes(datos) {
     const resultadoPendientes = document.getElementById("resultadoPendientes");
@@ -420,19 +654,26 @@ function pintarPackingEscaneo(datos) {
     const resultadoPacking = document.getElementById("resultadoPacking");
     const filas = Array.isArray(datos) ? datos : [];
 
+    seleccionPacking = new Set();
+
     if (!filas.length) {
         resultadoPacking.innerHTML = "<p>Sin datos para este código.</p>";
         return;
     }
 
-    const htmlFilas = filas.map(item => {
+    // La descripción no se muestra en esta tabla (queda oculta a propósito), pero sigue
+    // disponible en "ultimoPacking" con los datos originales, así que enviaImprimir() y la
+    // construcción de la etiqueta no se ven afectadas.
+    const htmlFilas = filas.map((item, indice) => {
         const pedido = valorCampo(item, ["pedido", "Pedido", "PEDIDO"]);
         const nroParte = valorCampo(item, ["nroparte", "nroParte", "NroParte", "NROPARTE"]);
         const ubicacion = valorCampo(item, ["ubicacion", "Ubicacion", "UBICACION"]);
         const cantidad = valorCampo(item, ["cantidad", "Cantidad", "CANTIDAD"]);
+        const estado = valorCampo(item, ["estado", "Estado", "ESTADO"]);
+        const yaImpresa = String(estado || "").trim().toUpperCase() === "C";
 
         return `
-            <tr>
+            <tr data-indice="${indice}" class="${yaImpresa ? "fila-impresa" : ""}">
                 <td>${escaparHtml(pedido)}</td>
                 <td>${escaparHtml(nroParte)}</td>
                 <td>${escaparHtml(ubicacion)}</td>
@@ -440,7 +681,12 @@ function pintarPackingEscaneo(datos) {
             </tr>`;
     }).join("");
 
+    const aviso = filas.length > 1
+        ? '<p class="aviso-seleccion-packing">Toque los registros que desea imprimir.</p>'
+        : "";
+
     resultadoPacking.innerHTML = `
+        ${aviso}
         <table>
             <thead>
                 <tr>
@@ -452,6 +698,21 @@ function pintarPackingEscaneo(datos) {
             </thead>
             <tbody>${htmlFilas}</tbody>
         </table>`;
+
+    if (filas.length > 1) {
+        resultadoPacking.querySelectorAll("tbody tr").forEach(fila => {
+            fila.addEventListener("click", function () {
+                const indice = Number(fila.dataset.indice);
+                if (seleccionPacking.has(indice)) {
+                    seleccionPacking.delete(indice);
+                    fila.classList.remove("fila-seleccionada");
+                } else {
+                    seleccionPacking.add(indice);
+                    fila.classList.add("fila-seleccionada");
+                }
+            });
+        });
+    }
 }
 
 
@@ -469,7 +730,7 @@ async function buscarFactura() {
 
     try {
 
-        alert("Buscando factura: " + factura);
+        //alert("Buscando factura: " + factura);
 
         const response = await fetch("http://javaserver.teojama.com:8080/FacturaApp/api/factura/consultafactura", {
             method: "POST",
@@ -485,7 +746,7 @@ async function buscarFactura() {
             throw new Error(`HTTP ${response.status}: ${texto}`);
         }
 
-        const datos = JSON.parse(texto);
+        const datos = parsearJsonSeguro(texto);
         console.log("Respuesta factura:", datos);
         pintarFacturas(obtenerFilasFactura(datos));
 
@@ -510,6 +771,62 @@ async function buscarInfo() {
     } catch (error) {
         alert("ERROR: " + (error.message || error.toString()));
         console.log(error);
+    }
+}
+
+// El backend a veces manda campos de texto (ej. "descripcion": "EMBLEMA "EURO3"") con comillas
+// internas sin escapar, lo que rompe JSON.parse. Esto escapa cualquier comilla que no sea el
+// cierre real del campo (la real siempre está seguida, ignorando espacios, de , : } ] o el final).
+function repararComillasJson(texto) {
+    let resultado = "";
+    let dentroDeCadena = false;
+
+    for (let i = 0; i < texto.length; i++) {
+        const c = texto[i];
+
+        if (c === "\\" && dentroDeCadena) {
+            // Ya viene escapado (\", \\, \n, \uXXXX, etc.): se copia tal cual sin reinterpretarlo.
+            resultado += c + (texto[i + 1] ?? "");
+            i++;
+            continue;
+        }
+
+        if (c !== '"') {
+            resultado += c;
+            continue;
+        }
+
+        if (!dentroDeCadena) {
+            dentroDeCadena = true;
+            resultado += c;
+            continue;
+        }
+
+        let j = i + 1;
+        while (j < texto.length && /\s/.test(texto[j])) j++;
+        const siguiente = texto[j];
+        const esCierreReal = siguiente === undefined || ",:}]".includes(siguiente);
+
+        if (esCierreReal) {
+            dentroDeCadena = false;
+            resultado += c;
+        } else {
+            resultado += '\\"';
+        }
+    }
+
+    return resultado;
+}
+
+function parsearJsonSeguro(texto) {
+    try {
+        return JSON.parse(texto);
+    } catch (errorOriginal) {
+        try {
+            return JSON.parse(repararComillasJson(texto));
+        } catch (errorReparado) {
+            throw errorOriginal;
+        }
     }
 }
 

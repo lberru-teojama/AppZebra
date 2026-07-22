@@ -13,7 +13,7 @@
 <body>
 
     <div class="banner">
-        <h1>🚛 Máximo App 🚛</h1>
+        <h1>🚛 Máximo App </h1>
         <p>¡Tu asistente para recibir repuestos Hino. 😄</p>
     </div>
 
@@ -103,13 +103,39 @@
             <label style="color:#189a4b; font-weight:bold; margin-left:8px;" id="lblFacturaPendiente">
 
             </label>
-            <button onclick="buscarPendientes()">
+            
+            <div class="datoFactura">
+
+            <label>Factura:</label>
+                <label>
+                <label style="color:#189a4b; font-weight:bold; margin-left:8px;" id="lblFacturaPendientes">
+                </label>
+            </div>
+
+            <div class="datoResumen">   
+                <label>Total Cantidad:</label>
+                <label>
+                <label style="color:#189a4b; font-weight:bold; margin-left:8px;" id="lblTotalCantidadPendientes">
+                </label>
+            </div>
+            <div class="datoResumen">   
+                <label>Total Items:</label>
+                <label>
+                <label style="color:#189a4b; font-weight:bold; margin-left:8px;" id="lblTotalItemsPendientes">
+                </label>
+            </div>
+
+            <button class="btn-buscar-packing" onclick="buscarPendientes()">
                 Buscar Pendientes 🕓
             </button>
 
             <div id="resultadoPendientes">
 
             </div>
+             <button class="btn-cierra-packing" onclick="CierraPacking()">
+                Cerrar Packing 
+            </button>
+
 
         </div>
 
@@ -125,7 +151,7 @@
         <button type="button" onclick="buscarImpresorasPacking()">
             📡 Buscar impresoras
         </button>
-        <button type="button" onclick="configurarImpresoraPacking()">
+        <button type="button" hidden onclick="configurarImpresoraPacking()">
             ⚙️ Configurar impresora
         </button>
         <div id="listaImpresorasPacking" class="lista-impresoras"></div>
